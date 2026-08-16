@@ -1,5 +1,9 @@
+
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import {
+  Link,
+  useLocation,
+} from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -19,6 +23,8 @@ const NAV = [
 ];
 
 export function Navbar() {
+  const location = useLocation();
+
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
@@ -36,18 +42,30 @@ export function Navbar() {
     enabled: !!user,
   });
 
+  const isHomePage =
+    location.pathname === "/";
+
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 30);
 
+      if (!isHomePage) {
+        setActive("");
+        return;
+      }
+
       let current = "home";
 
       for (const item of NAV) {
-        const el = document.getElementById(item.id);
+        const el =
+          document.getElementById(
+            item.id,
+          );
 
         if (
           el &&
-          el.getBoundingClientRect().top <= 120
+          el.getBoundingClientRect()
+            .top <= 120
         ) {
           current = item.id;
         }
@@ -56,9 +74,11 @@ export function Navbar() {
       setActive(current);
     };
 
-    window.addEventListener("scroll", onScroll, {
-      passive: true,
-    });
+    window.addEventListener(
+      "scroll",
+      onScroll,
+      { passive: true },
+    );
 
     onScroll();
 
@@ -67,17 +87,16 @@ export function Navbar() {
         "scroll",
         onScroll,
       );
-  }, []);
+  }, [isHomePage]);
 
   const go = (id: string) => {
     setOpen(false);
 
-    if (window.location.pathname !== "/") {
+    if (!isHomePage) {
       window.location.href =
         id === "home"
           ? "/"
           : `/#${id}`;
-
       return;
     }
 
@@ -93,22 +112,27 @@ export function Navbar() {
   };
 
   /*
-   * Old navbar color behavior:
-   * - Dark mode          → white
-   * - Light + transparent → white
-   * - Light + scrolled   → black
+   * HOME PAGE
+   * - Top of hero: white
+   * - Scrolled: black in light mode
+   *
+   * OTHER PAGES
+   * - Always black in light mode
+   *
+   * DARK MODE
+   * - Always white
    */
-  const navTextClass = dark
-    ? "text-white"
-    : scrolled
-      ? "text-black"
-      : "text-white";
+  const useWhiteText =
+    dark ||
+    (isHomePage && !scrolled);
 
-  const navHoverClass = dark
+  const navTextClass = useWhiteText
+    ? "text-white"
+    : "text-black";
+
+  const navHoverClass = useWhiteText
     ? "text-white hover:text-primary"
-    : scrolled
-      ? "text-black hover:text-primary"
-      : "text-white hover:text-primary";
+    : "text-black hover:text-primary";
 
   return (
     <>
@@ -124,14 +148,14 @@ export function Navbar() {
 
       <header
         className={`fixed inset-x-0 top-1 z-40 transition-all duration-500 ${
-          scrolled
+          scrolled || !isHomePage
             ? "py-2"
             : "py-4"
         }`}
       >
         <nav
           className={`mx-auto flex max-w-7xl items-center justify-between rounded-full px-4 transition-all duration-500 sm:px-6 ${
-            scrolled
+            scrolled || !isHomePage
               ? "glass shadow-[var(--shadow-soft)]"
               : "bg-transparent"
           }`}
@@ -144,7 +168,7 @@ export function Navbar() {
           >
             <img
               src={logo}
-              alt=""
+              alt="Chandra Gardens"
               className="h-9 w-9 object-contain"
             />
 
@@ -165,6 +189,7 @@ export function Navbar() {
                 <button
                   onClick={() => go(n.id)}
                   className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                    isHomePage &&
                     active === n.id
                       ? "font-semibold text-primary"
                       : navHoverClass
@@ -172,9 +197,11 @@ export function Navbar() {
                 >
                   {n.label}
 
-                  {active === n.id && (
-                    <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-primary" />
-                  )}
+                  {isHomePage &&
+                    active ===
+                      n.id && (
+                      <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-primary" />
+                    )}
                 </button>
               </li>
             ))}
@@ -278,18 +305,21 @@ export function Navbar() {
                     go(n.id)
                   }
                   className={`relative w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition-colors ${
+                    isHomePage &&
                     active === n.id
                       ? "font-bold text-primary"
-                      : scrolled || dark
-                        ? "text-black dark:text-white hover:text-primary"
-                        : "text-white hover:text-primary"
+                      : dark
+                        ? "text-white hover:text-primary"
+                        : "text-black hover:text-primary"
                   }`}
                 >
                   {n.label}
 
-                  {active === n.id && (
-                    <span className="absolute left-4 right-4 bottom-1 h-0.5 rounded-full bg-primary" />
-                  )}
+                  {isHomePage &&
+                    active ===
+                      n.id && (
+                      <span className="absolute bottom-1 left-4 right-4 h-0.5 rounded-full bg-primary" />
+                    )}
                 </button>
               </li>
             ))}
