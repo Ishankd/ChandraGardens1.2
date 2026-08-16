@@ -33,7 +33,7 @@ const productSchema = z.object({
   sunlight: z.string().trim().max(120).nullable(),
   watering: z.string().trim().max(120).nullable(),
   soil: z.string().trim().max(120).nullable(),
-  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  difficulty: z.enum(["easy", "medium", "hard"]),
 });
 
 const productIdSchema = z.object({
