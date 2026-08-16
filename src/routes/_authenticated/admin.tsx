@@ -1002,7 +1002,11 @@ function AdminPage() {
                     Available
                   </label>
                 </div>
-
+{editing && (
+  <ProductVariantsEditor
+    productId={editing.id}
+  />
+)}
                 <button
                   type="button"
                   onClick={
