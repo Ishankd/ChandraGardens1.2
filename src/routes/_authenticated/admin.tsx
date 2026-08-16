@@ -13,7 +13,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 
 import { Navbar } from "@/components/Navbar";
-
+import { ProductVariantsEditor } from "@/components/admin/ProductVariantsEditor";
 import {
   adminCreateProduct,
   adminCreateCoverSize,
