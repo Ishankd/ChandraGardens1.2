@@ -286,7 +286,7 @@ export function ProductVariantsEditor({
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 p-4">
+    <div className="relative z-50 w-full min-w-0 overflow-visible rounded-2xl border border-border/70 p-4">
       <div className="mb-4">
         <h3 className="font-semibold">
           Cover size pricing &
@@ -305,11 +305,9 @@ export function ProductVariantsEditor({
         {rows.map(
           (row: Row) => (
             <div
-              key={
-                row.coverSizeId
-              }
-              className="grid gap-3 rounded-2xl border border-border/60 p-3 md:grid-cols-[1fr_130px_110px_auto_auto]"
-            >
+  key={row.coverSizeId}
+  className="relative z-50 grid w-full min-w-0 gap-3 rounded-2xl border border-border/60 p-3 md:grid-cols-[minmax(0,1fr)_110px_90px_auto_auto]"
+>
               <div className="flex items-center font-medium">
                 {row.label}
               </div>
