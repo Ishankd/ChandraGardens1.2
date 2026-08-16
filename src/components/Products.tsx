@@ -342,6 +342,7 @@ export function Products({
               onWish={() =>
                 wishlist.toggle(p.id)
               }
+              shopProduct={shopProducts.find((sp) => sp.name.trim().toLowerCase() === p.name.trim().toLowerCase())}
               coverSizes={coverSizes}
               onAdd={(
                 qty,
@@ -391,6 +392,7 @@ export function Products({
 
 function ProductCard({
   p,
+  shopProduct,
   list,
   wished,
   onWish,
@@ -401,6 +403,10 @@ function ProductCard({
   i,
 }: {
   p: Plant;
+  shopProduct?: {
+    variants: Array<{ id: string; coverSizeId: string; coverSizeLabel: string; price: number; stock: number; available: boolean }>;
+    price: number;
+  };
   list: boolean;
   wished: boolean;
   onWish: () => void;
@@ -419,24 +425,17 @@ function ProductCard({
   const [coverId, setCoverId] =
     useState("");
 
-  const cover =
-    coverSizes.find(
-      (c) => c.id === coverId,
-    ) ??
-    coverSizes[0] ??
+  const variants = shopProduct?.variants ?? [];
+  const selectedVariant =
+    variants.find((v) => v.coverSizeId === coverId) ??
+    variants[0] ??
     null;
 
-  /*
-   * Your Plant type uses sizes[].
-   * Therefore p.sizes[0].price is used
-   * instead of p.price.
-   */
-  const basePrice =
-    p.sizes[0]?.price ?? 0;
-
   const price =
-    basePrice +
-    (cover?.priceDelta ?? 0);
+    selectedVariant?.price ??
+    shopProduct?.price ??
+    p.sizes[0]?.price ??
+    0;
 
   const diffColor =
     p.difficulty === "Easy"
@@ -520,38 +519,22 @@ function ProductCard({
           </p>
         )}
 
-        {coverSizes.length > 0 && (
+        {variants.length > 0 && (
           <label className="mt-3 block">
             <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Cover size
             </span>
 
             <select
-              value={
-                cover?.id ?? ""
-              }
-              onChange={(e) =>
-                setCoverId(
-                  e.target.value,
-                )
-              }
+              value={selectedVariant?.coverSizeId ?? ""}
+              onChange={(e) => setCoverId(e.target.value)}
               className="w-full rounded-full border border-border bg-background/60 px-3 py-2 text-xs"
             >
-              {coverSizes.map(
-                (c) => (
-                  <option
-                    key={c.id}
-                    value={c.id}
-                  >
-                    {c.label}
-
-                    {c.priceDelta >
-                    0
-                      ? ` (+₹${c.priceDelta})`
-                      : ""}
-                  </option>
-                ),
-              )}
+              {variants.map((v) => (
+                <option key={v.id} value={v.coverSizeId} disabled={v.stock <= 0}>
+                  {v.coverSizeLabel} — ₹{v.price}{v.stock <= 0 ? " (Out of stock)" : ""}
+                </option>
+              ))}
             </select>
           </label>
         )}
@@ -595,8 +578,7 @@ function ProductCard({
               onClick={() =>
                 onAdd(
                   qty,
-                  cover?.id ??
-                    null,
+                  selectedVariant?.coverSizeId ?? null,
                 )
               }
               disabled={adding}

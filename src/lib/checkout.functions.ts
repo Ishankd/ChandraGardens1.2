@@ -59,90 +59,45 @@ export const createCheckoutOrder = createServerFn({
       context as { userId: string }
     ).userId;
 
-    // --------------------------------------------------
-    // Find the user's cart
-    // IMPORTANT: carts uses customer_id, not user_id.
-    // --------------------------------------------------
     const db = supabaseAdmin as any;
 
-const {
-  data: cart,
-  error: cartError,
-} = await db
-  .from("carts")
-  .select("id")
-  .eq("customer_id", userId)
-  .maybeSingle();
+    const { data: cart, error: cartError } = await db
+      .from("carts")
+      .select("id")
+      .eq("customer_id", userId)
+      .maybeSingle();
+
     if (cartError) {
-      throw new Error(
-        `Could not load cart: ${cartError.message}`,
-      );
+      throw new Error(`Could not load cart: ${cartError.message}`);
     }
 
     if (!cart) {
-      throw new Error(
-        "Your cart is empty.",
-      );
+      throw new Error("Your cart is empty.");
     }
 
-    // --------------------------------------------------
-    // Load cart items
-    // --------------------------------------------------
-    const {
-      data: items,
-      error: itemsError,
-    } = await supabaseAdmin
+    const { data: items, error: itemsError } = await db
       .from("cart_items")
-      .select(
-        `
-          quantity,
-          products(price),
-          cover_sizes(price_delta)
-        `,
-      )
+      .select("quantity,products(price),product_variants(price,stock,available)")
       .eq("cart_id", cart.id);
 
     if (itemsError) {
-      throw new Error(
-        `Could not load cart items: ${itemsError.message}`,
-      );
+      throw new Error(`Could not load cart items: ${itemsError.message}`);
     }
 
-    // --------------------------------------------------
-    // Calculate subtotal
-    // --------------------------------------------------
-    const subtotal = (
-      items ?? []
-    ).reduce(
-      (
-        total: number,
-        item: any,
-      ) => {
-        const productPrice =
-          Number(
-            item.products?.price ?? 0,
-          );
-
-        const coverDelta =
-          Number(
-            item.cover_sizes
-              ?.price_delta ?? 0,
-          );
-
-        return (
-          total +
-          (productPrice +
-            coverDelta) *
-            Number(item.quantity)
+    const subtotal = (items ?? []).reduce(
+      (total: number, item: any) => {
+        const unitPrice = Number(
+          item.product_variants?.price ??
+            item.products?.price ??
+            0,
         );
+        return total + unitPrice * Number(item.quantity);
       },
       0,
     );
 
     if (subtotal <= 0) {
-      throw new Error(
-        "Your cart is empty.",
-      );
+      throw new Error("Your cart is empty.");
     }
 
     const deliveryCharge =
