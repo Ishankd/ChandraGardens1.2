@@ -26,10 +26,8 @@ export function Navbar() {
   const progress = useScrollProgress();
   const { dark, toggle } = useTheme();
 
-  // Backend authentication
   const { user, signOut } = useAuth();
 
-  // Backend cart
   const fetchCart = useServerFn(getCart);
 
   const { data: cart } = useQuery({
@@ -47,7 +45,10 @@ export function Navbar() {
       for (const item of NAV) {
         const el = document.getElementById(item.id);
 
-        if (el && el.getBoundingClientRect().top <= 120) {
+        if (
+          el &&
+          el.getBoundingClientRect().top <= 120
+        ) {
           current = item.id;
         }
       }
@@ -55,22 +56,33 @@ export function Navbar() {
       setActive(current);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+    });
 
-    return () => window.removeEventListener("scroll", onScroll);
+    onScroll();
+
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        onScroll,
+      );
   }, []);
 
   const go = (id: string) => {
     setOpen(false);
 
-    // If we're on another route such as /cart, /auth, /orders,
-    // go back to the homepage first.
     if (window.location.pathname !== "/") {
-      window.location.href = id === "home" ? "/" : `/#${id}`;
+      window.location.href =
+        id === "home"
+          ? "/"
+          : `/#${id}`;
+
       return;
     }
 
-    const el = document.getElementById(id);
+    const el =
+      document.getElementById(id);
 
     if (el) {
       el.scrollIntoView({
@@ -80,19 +92,41 @@ export function Navbar() {
     }
   };
 
+  /*
+   * Old navbar color behavior:
+   * - Dark mode          → white
+   * - Light + transparent → white
+   * - Light + scrolled   → black
+   */
+  const navTextClass = dark
+    ? "text-white"
+    : scrolled
+      ? "text-black"
+      : "text-white";
+
+  const navHoverClass = dark
+    ? "text-white hover:text-primary"
+    : scrolled
+      ? "text-black hover:text-primary"
+      : "text-white hover:text-primary";
+
   return (
     <>
       {/* Scroll progress */}
       <div className="fixed left-0 top-0 z-50 h-1 w-full bg-transparent">
         <div
           className="h-full bg-gradient-to-r from-primary via-primary-glow to-primary transition-[width] duration-150"
-          style={{ width: `${progress}%` }}
+          style={{
+            width: `${progress}%`,
+          }}
         />
       </div>
 
       <header
         className={`fixed inset-x-0 top-1 z-40 transition-all duration-500 ${
-          scrolled ? "py-2" : "py-4"
+          scrolled
+            ? "py-2"
+            : "py-4"
         }`}
       >
         <nav
@@ -114,8 +148,13 @@ export function Navbar() {
               className="h-9 w-9 object-contain"
             />
 
-            <span className="font-display text-lg font-semibold leading-none">
-              Chandra <span className="gradient-text">Gardens</span>
+            <span
+              className={`font-display text-lg font-semibold leading-none ${navTextClass}`}
+            >
+              Chandra{" "}
+              <span className="gradient-text">
+                Gardens
+              </span>
             </span>
           </button>
 
@@ -127,8 +166,8 @@ export function Navbar() {
                   onClick={() => go(n.id)}
                   className={`relative rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     active === n.id
-                      ? "text-primary"
-                      : "text-foreground/70 hover:text-foreground"
+                      ? "font-semibold text-primary"
+                      : navHoverClass
                   }`}
                 >
                   {n.label}
@@ -147,7 +186,7 @@ export function Navbar() {
             <Link
               to="/cart"
               aria-label="Cart"
-              className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 transition-transform hover:scale-110"
+              className={`relative grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 transition-transform hover:scale-110 ${navTextClass}`}
             >
               <i className="fa-solid fa-cart-shopping text-sm" />
 
@@ -163,7 +202,7 @@ export function Navbar() {
               <Link
                 to="/orders"
                 aria-label="My orders"
-                className="hidden h-10 place-items-center rounded-full border border-border bg-background/50 px-4 text-xs font-semibold sm:grid"
+                className={`hidden h-10 place-items-center rounded-full border border-border bg-background/50 px-4 text-xs font-semibold sm:grid ${navTextClass} hover:text-primary`}
               >
                 Orders
               </Link>
@@ -172,16 +211,18 @@ export function Navbar() {
             {/* Authentication */}
             {user ? (
               <button
-                onClick={() => void signOut()}
+                onClick={() =>
+                  void signOut()
+                }
                 aria-label="Sign out"
-                className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50"
+                className={`grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 ${navTextClass} hover:text-primary`}
               >
                 <i className="fa-solid fa-right-from-bracket text-sm" />
               </button>
             ) : (
               <Link
                 to="/auth"
-                className="grid h-10 place-items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground"
+                className="grid h-10 place-items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground transition-transform hover:scale-105"
               >
                 Sign in
               </Link>
@@ -191,24 +232,30 @@ export function Navbar() {
             <button
               onClick={toggle}
               aria-label="Toggle theme"
-              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 transition-transform hover:scale-110"
+              className={`grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 transition-transform hover:scale-110 ${navTextClass}`}
             >
               <i
                 className={`fa-solid ${
-                  dark ? "fa-sun" : "fa-moon"
+                  dark
+                    ? "fa-sun"
+                    : "fa-moon"
                 } text-sm`}
               />
             </button>
 
             {/* Mobile menu */}
             <button
-              onClick={() => setOpen((o) => !o)}
+              onClick={() =>
+                setOpen((o) => !o)
+              }
               aria-label="Menu"
-              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 lg:hidden"
+              className={`grid h-10 w-10 place-items-center rounded-full border border-border bg-background/50 transition-transform hover:scale-110 lg:hidden ${navTextClass}`}
             >
               <i
                 className={`fa-solid ${
-                  open ? "fa-xmark" : "fa-bars"
+                  open
+                    ? "fa-xmark"
+                    : "fa-bars"
                 } text-sm`}
               />
             </button>
@@ -227,14 +274,22 @@ export function Navbar() {
             {NAV.map((n) => (
               <li key={n.id}>
                 <button
-                  onClick={() => go(n.id)}
-                  className={`w-full rounded-2xl px-4 py-3 text-left text-sm font-medium ${
+                  onClick={() =>
+                    go(n.id)
+                  }
+                  className={`relative w-full rounded-2xl px-4 py-3 text-left text-sm font-medium transition-colors ${
                     active === n.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/80"
+                      ? "font-bold text-primary"
+                      : scrolled || dark
+                        ? "text-black dark:text-white hover:text-primary"
+                        : "text-white hover:text-primary"
                   }`}
                 >
                   {n.label}
+
+                  {active === n.id && (
+                    <span className="absolute left-4 right-4 bottom-1 h-0.5 rounded-full bg-primary" />
+                  )}
                 </button>
               </li>
             ))}
@@ -243,8 +298,10 @@ export function Navbar() {
             <li className="mt-1">
               <Link
                 to="/cart"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-foreground/80 hover:text-primary"
+                onClick={() =>
+                  setOpen(false)
+                }
+                className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium text-black hover:text-primary dark:text-white"
               >
                 <span>
                   <i className="fa-solid fa-cart-shopping mr-2" />
@@ -264,8 +321,10 @@ export function Navbar() {
               <li className="mt-1">
                 <Link
                   to="/orders"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-2xl px-4 py-3 text-sm font-medium text-foreground/80 hover:text-primary"
+                  onClick={() =>
+                    setOpen(false)
+                  }
+                  className="block rounded-2xl px-4 py-3 text-sm font-medium text-black hover:text-primary dark:text-white"
                 >
                   <i className="fa-solid fa-box mr-2" />
                   Orders
@@ -281,14 +340,16 @@ export function Navbar() {
                     setOpen(false);
                     void signOut();
                   }}
-                  className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm font-semibold"
+                  className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm font-semibold text-black dark:text-white"
                 >
                   Sign out
                 </button>
               ) : (
                 <Link
                   to="/auth"
-                  onClick={() => setOpen(false)}
+                  onClick={() =>
+                    setOpen(false)
+                  }
                   className="block rounded-2xl bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground"
                 >
                   Sign in
