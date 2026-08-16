@@ -1,6 +1,10 @@
-
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import {
+  createFileRoute,
+} from "@tanstack/react-router";
+import {
+  useMemo,
+  useState,
+} from "react";
 import {
   useMutation,
   useQuery,
@@ -9,9 +13,12 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 
 import { Navbar } from "@/components/Navbar";
+
 import {
   adminCreateProduct,
   adminCreateCoverSize,
+  adminDeleteCoverSize,
+  adminDeleteProduct,
   adminGetCategories,
   adminGetCoverSizes,
   adminGetOrders,
@@ -21,42 +28,52 @@ import {
   adminUpdateProduct,
 } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({
-    meta: [
-      {
-        title: "Admin — Chandra Gardens",
-      },
-      {
-        name: "description",
-        content:
-          "Chandra Gardens admin dashboard.",
-      },
-    ],
-  }),
-  component: AdminPage,
-});
+export const Route =
+  createFileRoute(
+    "/_authenticated/admin",
+  )({
+    head: () => ({
+      meta: [
+        {
+          title:
+            "Admin — Chandra Gardens",
+        },
+        {
+          name: "description",
+          content:
+            "Chandra Gardens admin dashboard.",
+        },
+      ],
+    }),
 
-type Product =
-  Awaited<
-    ReturnType<typeof adminGetProducts>
-  >[number];
-
-type CoverSize =
-  Awaited<
-    ReturnType<typeof adminGetCoverSizes>
-  >[number];
+    component: AdminPage,
+  });
 
 type Difficulty =
   | "easy"
   | "medium"
   | "hard";
 
+type Product =
+  Awaited<
+    ReturnType<
+      typeof adminGetProducts
+    >
+  >[number];
+
+type CoverSize =
+  Awaited<
+    ReturnType<
+      typeof adminGetCoverSizes
+    >
+  >[number];
+
 const emptyProduct = {
   name: "",
   slug: "",
   description: "",
-  categoryId: null as string | null,
+  categoryId:
+    null as string | null,
   price: 0,
   stock: 0,
   image: "",
@@ -65,7 +82,8 @@ const emptyProduct = {
   sunlight: "",
   watering: "",
   soil: "",
-  difficulty: "easy" as Difficulty,
+  difficulty:
+    "easy" as Difficulty,
 };
 
 const emptyCover = {
@@ -76,82 +94,142 @@ const emptyCover = {
 };
 
 function AdminPage() {
-  const qc = useQueryClient();
+  const qc =
+    useQueryClient();
 
-  const [tab, setTab] = useState<
-    "products" | "covers" | "orders"
-  >("products");
+  const [tab, setTab] =
+    useState<
+      "products" |
+        "covers" |
+        "orders"
+    >("products");
 
   const [editing, setEditing] =
-    useState<Product | null>(null);
+    useState<Product | null>(
+      null,
+    );
 
   const [form, setForm] =
-    useState(emptyProduct);
+    useState(
+      emptyProduct,
+    );
 
-  const [coverForm, setCoverForm] =
-    useState(emptyCover);
+  const [
+    coverForm,
+    setCoverForm,
+  ] = useState(
+    emptyCover,
+  );
 
   const [error, setError] =
     useState("");
 
-  /* ---------------------------------------------------
-     Server functions
-  --------------------------------------------------- */
-
   const fetchProducts =
-    useServerFn(adminGetProducts);
+    useServerFn(
+      adminGetProducts,
+    );
 
   const fetchCategories =
-    useServerFn(adminGetCategories);
+    useServerFn(
+      adminGetCategories,
+    );
 
   const fetchCovers =
-    useServerFn(adminGetCoverSizes);
+    useServerFn(
+      adminGetCoverSizes,
+    );
 
   const fetchOrders =
-    useServerFn(adminGetOrders);
+    useServerFn(
+      adminGetOrders,
+    );
 
   const createProductFn =
-    useServerFn(adminCreateProduct);
+    useServerFn(
+      adminCreateProduct,
+    );
 
   const updateProductFn =
-    useServerFn(adminUpdateProduct);
+    useServerFn(
+      adminUpdateProduct,
+    );
+
+  const deleteProductFn =
+    useServerFn(
+      adminDeleteProduct,
+    );
 
   const createCoverFn =
-    useServerFn(adminCreateCoverSize);
+    useServerFn(
+      adminCreateCoverSize,
+    );
 
   const updateCoverFn =
-    useServerFn(adminUpdateCoverSize);
+    useServerFn(
+      adminUpdateCoverSize,
+    );
+
+  const deleteCoverFn =
+    useServerFn(
+      adminDeleteCoverSize,
+    );
 
   const updateOrderFn =
-    useServerFn(adminUpdateOrderStatus);
+    useServerFn(
+      adminUpdateOrderStatus,
+    );
 
-  /* ---------------------------------------------------
-     Queries
-  --------------------------------------------------- */
+  const productsQuery =
+    useQuery({
+      queryKey: [
+        "admin-products",
+      ],
+      queryFn: () =>
+        fetchProducts(),
+    });
 
-  const productsQuery = useQuery({
-    queryKey: ["admin-products"],
-    queryFn: () => fetchProducts(),
-  });
+  const categoriesQuery =
+    useQuery({
+      queryKey: [
+        "admin-categories",
+      ],
+      queryFn: () =>
+        fetchCategories(),
+    });
 
-  const categoriesQuery = useQuery({
-    queryKey: ["admin-categories"],
-    queryFn: () => fetchCategories(),
-  });
+  const coversQuery =
+    useQuery({
+      queryKey: [
+        "admin-covers",
+      ],
+      queryFn: () =>
+        fetchCovers(),
+    });
 
-  const coversQuery = useQuery({
-    queryKey: ["admin-covers"],
-    queryFn: () => fetchCovers(),
-  });
+  const ordersQuery =
+    useQuery({
+      queryKey: [
+        "admin-orders",
+      ],
+      queryFn: () =>
+        fetchOrders(),
+    });
 
-  const ordersQuery = useQuery({
-    queryKey: ["admin-orders"],
-    queryFn: () => fetchOrders(),
-  });
+  const products =
+    productsQuery.data ??
+    [];
 
-  /* ---------------------------------------------------
-     Product mutations
-  --------------------------------------------------- */
+  const categories =
+    categoriesQuery.data ??
+    [];
+
+  const covers =
+    coversQuery.data ??
+    [];
+
+  const orders =
+    ordersQuery.data ??
+    [];
 
   const createProduct =
     useMutation({
@@ -159,34 +237,29 @@ function AdminPage() {
         data: typeof emptyProduct,
       ) =>
         createProductFn({
-          data: {
-            ...data,
-            image: data.image,
-            sunlight:
-              data.sunlight,
-            watering:
-              data.watering,
-            soil: data.soil,
-          },
+          data,
         }),
 
       onSuccess: async () => {
-        setForm(emptyProduct);
+        setForm(
+          emptyProduct,
+        );
         setEditing(null);
         setError("");
 
         await qc.invalidateQueries({
-          queryKey: ["admin-products"],
+          queryKey: [
+            "admin-products",
+          ],
         });
       },
 
-      onError: (e) => {
+      onError: (err) =>
         setError(
-          e instanceof Error
-            ? e.message
-            : String(e),
-        );
-      },
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
     });
 
   const updateProduct =
@@ -197,39 +270,61 @@ function AdminPage() {
         },
       ) =>
         updateProductFn({
-          data: {
-            ...data,
-            image: data.image,
-            sunlight:
-              data.sunlight,
-            watering:
-              data.watering,
-            soil: data.soil,
-          },
+          data,
         }),
 
       onSuccess: async () => {
-        setForm(emptyProduct);
+        setForm(
+          emptyProduct,
+        );
         setEditing(null);
         setError("");
 
         await qc.invalidateQueries({
-          queryKey: ["admin-products"],
+          queryKey: [
+            "admin-products",
+          ],
         });
       },
 
-      onError: (e) => {
+      onError: (err) =>
         setError(
-          e instanceof Error
-            ? e.message
-            : String(e),
-        );
-      },
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
     });
 
-  /* ---------------------------------------------------
-     Cover mutations
-  --------------------------------------------------- */
+  const deleteProduct =
+    useMutation({
+      mutationFn: (
+        id: string,
+      ) =>
+        deleteProductFn({
+          data: { id },
+        }),
+
+      onSuccess: async () => {
+        setEditing(null);
+        setForm(
+          emptyProduct,
+        );
+        setError("");
+
+        await qc.invalidateQueries({
+          queryKey: [
+            "admin-products",
+          ],
+        });
+      },
+
+      onError: (err) =>
+        setError(
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
+    });
 
   const createCover =
     useMutation({
@@ -244,24 +339,24 @@ function AdminPage() {
         setCoverForm({
           ...emptyCover,
           sortOrder:
-            (coversQuery.data
-              ?.length ?? 0) + 1,
+            covers.length + 1,
         });
 
         setError("");
 
         await qc.invalidateQueries({
-          queryKey: ["admin-covers"],
+          queryKey: [
+            "admin-covers",
+          ],
         });
       },
 
-      onError: (e) => {
+      onError: (err) =>
         setError(
-          e instanceof Error
-            ? e.message
-            : String(e),
-        );
-      },
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
     });
 
   const updateCover =
@@ -279,22 +374,46 @@ function AdminPage() {
         setError("");
 
         await qc.invalidateQueries({
-          queryKey: ["admin-covers"],
+          queryKey: [
+            "admin-covers",
+          ],
         });
       },
 
-      onError: (e) => {
+      onError: (err) =>
         setError(
-          e instanceof Error
-            ? e.message
-            : String(e),
-        );
-      },
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
     });
 
-  /* ---------------------------------------------------
-     Order mutation
-  --------------------------------------------------- */
+  const deleteCover =
+    useMutation({
+      mutationFn: (
+        id: string,
+      ) =>
+        deleteCoverFn({
+          data: { id },
+        }),
+
+      onSuccess: async () => {
+        setError("");
+
+        await qc.invalidateQueries({
+          queryKey: [
+            "admin-covers",
+          ],
+        });
+      },
+
+      onError: (err) =>
+        setError(
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
+    });
 
   const updateOrder =
     useMutation({
@@ -314,80 +433,91 @@ function AdminPage() {
 
       onSuccess: async () => {
         await qc.invalidateQueries({
-          queryKey: ["admin-orders"],
+          queryKey: [
+            "admin-orders",
+          ],
         });
       },
 
-      onError: (e) => {
+      onError: (err) =>
         setError(
-          e instanceof Error
-            ? e.message
-            : String(e),
-        );
-      },
+          err instanceof Error
+            ? err.message
+            : String(err),
+        ),
     });
 
-  /* ---------------------------------------------------
-     Counts
-  --------------------------------------------------- */
-
-  const counts = useMemo(
-    () => ({
-      products:
-        productsQuery.data?.length ?? 0,
-
-      covers:
-        coversQuery.data?.length ?? 0,
-
-      orders:
-        ordersQuery.data?.length ?? 0,
-    }),
-    [
-      productsQuery.data,
-      coversQuery.data,
-      ordersQuery.data,
-    ],
-  );
-
-  /* ---------------------------------------------------
-     Edit product
-  --------------------------------------------------- */
+  const counts =
+    useMemo(
+      () => ({
+        products:
+          products.length,
+        covers:
+          covers.length,
+        orders:
+          orders.length,
+      }),
+      [
+        products.length,
+        covers.length,
+        orders.length,
+      ],
+    );
 
   const startEdit = (
     product: Product,
   ) => {
-    setEditing(product);
+    setEditing(
+      product,
+    );
 
     setForm({
-      name: product.name,
-      slug: product.slug,
+      name:
+        product.name,
+      slug:
+        product.slug,
       description:
-        product.description ?? "",
+        product.description ??
+        "",
       categoryId:
-        product.category_id,
+        product.category_id ??
+        null,
       price:
-        Number(product.price),
+        Number(
+          product.price,
+        ),
       stock:
-        Number(product.stock),
+        Number(
+          product.stock,
+        ),
       image:
-        product.image ?? "",
+        product.image ??
+        "",
       featured:
-        Boolean(product.featured),
+        Boolean(
+          product.featured,
+        ),
       available:
-        Boolean(product.available),
+        Boolean(
+          product.available,
+        ),
       sunlight:
-        product.sunlight ?? "",
+        product.sunlight ??
+        "",
       watering:
-        product.watering ?? "",
+        product.watering ??
+        "",
       soil:
-        product.soil ?? "",
+        product.soil ??
+        "",
       difficulty:
         normalizeDifficulty(
-          product.difficulty,
+          String(
+            product.difficulty ??
+              "easy",
+          ),
         ),
     });
-
-    setError("");
 
     window.scrollTo({
       top: 0,
@@ -395,82 +525,61 @@ function AdminPage() {
     });
   };
 
-  /* ---------------------------------------------------
-     Save product
-  --------------------------------------------------- */
+  const saveProduct =
+    () => {
+      setError("");
 
-  const saveProduct = () => {
-    setError("");
+      if (
+        !form.name.trim()
+      ) {
+        setError(
+          "Plant name is required.",
+        );
+        return;
+      }
 
-    if (!form.name.trim()) {
-      setError(
-        "Plant name is required.",
-      );
-      return;
-    }
-
-    const payload = {
-      ...form,
-
-      slug:
-        form.slug.trim() ||
-        form.name
-          .trim()
-          .toLowerCase()
-          .replace(
-            /[^a-z0-9]+/g,
-            "-",
+      const payload = {
+        ...form,
+        slug:
+          form.slug.trim() ||
+          slugify(
+            form.name,
           ),
+        image:
+          form.image.trim(),
+        sunlight:
+          form.sunlight.trim(),
+        watering:
+          form.watering.trim(),
+        soil:
+          form.soil.trim(),
+        difficulty:
+          normalizeDifficulty(
+            form.difficulty,
+          ),
+      };
 
-      image:
-        form.image.trim(),
-
-      sunlight:
-        form.sunlight.trim(),
-
-      watering:
-        form.watering.trim(),
-
-      soil:
-        form.soil.trim(),
-
-      difficulty:
-        normalizeDifficulty(
-          form.difficulty,
-        ),
+      if (editing) {
+        updateProduct.mutate({
+          ...payload,
+          id: editing.id,
+        });
+      } else {
+        createProduct.mutate(
+          payload,
+        );
+      }
     };
 
-    if (editing) {
-      updateProduct.mutate({
-        ...payload,
-        id: editing.id,
-      });
-    } else {
-      createProduct.mutate(
-        payload,
-      );
-    }
-  };
-
-  const isSavingProduct =
+  const savingProduct =
     createProduct.isPending ||
     updateProduct.isPending;
-
-  const isLoading =
-    productsQuery.isLoading ||
-    categoriesQuery.isLoading ||
-    coversQuery.isLoading;
-
-  /* ---------------------------------------------------
-     UI
-  --------------------------------------------------- */
 
   return (
     <>
       <Navbar />
 
       <main className="mx-auto min-h-screen max-w-7xl px-6 pb-24 pt-32">
-        {/* Header */}
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
@@ -482,510 +591,530 @@ function AdminPage() {
             </h1>
 
             <p className="mt-2 text-sm text-muted-foreground">
-              Manage plants, stock,
-              prices, cover sizes
-              and orders.
+              Manage plants,
+              stock, prices,
+              cover sizes and
+              orders.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() =>
-                setTab("products")
+            <TabButton
+              active={
+                tab ===
+                "products"
               }
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                tab === "products"
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-background/60"
-              }`}
+              onClick={() =>
+                setTab(
+                  "products",
+                )
+              }
             >
               Products (
-              {counts.products})
-            </button>
+              {counts.products}
+              )
+            </TabButton>
 
-            <button
-              onClick={() =>
-                setTab("covers")
+            <TabButton
+              active={
+                tab ===
+                "covers"
               }
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                tab === "covers"
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-background/60"
-              }`}
+              onClick={() =>
+                setTab(
+                  "covers",
+                )
+              }
             >
               Cover sizes (
-              {counts.covers})
-            </button>
+              {counts.covers}
+              )
+            </TabButton>
 
-            <button
-              onClick={() =>
-                setTab("orders")
+            <TabButton
+              active={
+                tab ===
+                "orders"
               }
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                tab === "orders"
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-background/60"
-              }`}
+              onClick={() =>
+                setTab(
+                  "orders",
+                )
+              }
             >
               Orders (
-              {counts.orders})
-            </button>
+              {counts.orders}
+              )
+            </TabButton>
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
             {error}
           </div>
         )}
 
-        {/* Loading */}
-        {isLoading && (
-          <div className="mt-8 text-sm text-muted-foreground">
-            Loading admin data…
-          </div>
-        )}
+        {tab ===
+          "products" && (
+          <section className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]">
+            <div className="rounded-3xl glass p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-2xl">
+                  {editing
+                    ? "Edit plant"
+                    : "Add plant"}
+                </h2>
 
-        {/* =================================================
-            PRODUCTS
-        ================================================= */}
-        {tab === "products" &&
-          !isLoading && (
-            <section className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]">
-              {/* Product form */}
-              <div className="rounded-3xl glass p-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-2xl">
-                    {editing
-                      ? "Edit plant"
-                      : "Add plant"}
-                  </h2>
+                {editing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(
+                        null,
+                      );
+                      setForm(
+                        emptyProduct,
+                      );
+                      setError("");
+                    }}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
 
-                  {editing && (
-                    <button
-                      onClick={() => {
-                        setEditing(
-                          null,
-                        );
-                        setForm(
-                          emptyProduct,
-                        );
-                        setError("");
-                      }}
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
+              <div className="mt-5 space-y-3">
+                <Field
+                  label="Plant name"
+                  value={
+                    form.name
+                  }
+                  onChange={(
+                    value,
+                  ) =>
+                    setForm(
+                      (state) => ({
+                        ...state,
+                        name: value,
+                        slug:
+                          state.slug ||
+                          slugify(
+                            value,
+                          ),
+                      }),
+                    )
+                  }
+                />
 
-                <div className="mt-5 space-y-3">
-                  <Field
-                    label="Plant name"
+                <Field
+                  label="Slug"
+                  value={
+                    form.slug
+                  }
+                  onChange={(
+                    value,
+                  ) =>
+                    setForm(
+                      (state) => ({
+                        ...state,
+                        slug: value,
+                      }),
+                    )
+                  }
+                />
+
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Category
+                  </span>
+
+                  <select
                     value={
-                      form.name
+                      form.categoryId ??
+                      ""
                     }
-                    onChange={(value) =>
+                    onChange={(event) =>
                       setForm(
                         (state) => ({
                           ...state,
-                          name: value,
-                          slug:
-                            state.slug ||
-                            slugify(
-                              value,
-                            ),
+                          categoryId:
+                            event
+                              .target
+                              .value ||
+                            null,
                         }),
                       )
                     }
-                  />
+                    className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm"
+                  >
+                    <option value="">
+                      No category
+                    </option>
 
+                    {categories.map(
+                      (
+                        category: any,
+                      ) => (
+                        <option
+                          key={
+                            category.id
+                          }
+                          value={
+                            category.id
+                          }
+                        >
+                          {
+                            category.name
+                          }
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
                   <Field
-                    label="Slug"
-                    value={
-                      form.slug
-                    }
-                    onChange={(value) =>
+                    label="Price ₹"
+                    type="number"
+                    value={String(
+                      form.price,
+                    )}
+                    onChange={(
+                      value,
+                    ) =>
                       setForm(
                         (state) => ({
                           ...state,
-                          slug: value,
-                        }),
-                      )
-                    }
-                  />
-
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Category
-                    </span>
-
-                    <select
-                      value={
-                        form.categoryId ??
-                        ""
-                      }
-                      onChange={(e) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            categoryId:
-                              e.target
-                                .value ||
-                              null,
-                          }),
-                        )
-                      }
-                      className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm"
-                    >
-                      <option value="">
-                        No category
-                      </option>
-
-                      {categoriesQuery.data?.map(
-                        (
-                          category: {
-                            id: string;
-                            name: string;
-                          },
-                        ) => (
-                          <option
-                            key={
-                              category.id
-                            }
-                            value={
-                              category.id
-                            }
-                          >
-                            {
-                              category.name
-                            }
-                          </option>
-                        ),
-                      )}
-                    </select>
-                  </label>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field
-                      label="Price ₹"
-                      type="number"
-                      value={String(
-                        form.price,
-                      )}
-                      onChange={(
-                        value,
-                      ) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            price:
-                              Number(
-                                value,
-                              ) ||
-                              0,
-                          }),
-                        )
-                      }
-                    />
-
-                    <Field
-                      label="Stock"
-                      type="number"
-                      value={String(
-                        form.stock,
-                      )}
-                      onChange={(
-                        value,
-                      ) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            stock: Math.max(
+                          price:
+                            Math.max(
                               0,
                               Number(
                                 value,
                               ) ||
                                 0,
                             ),
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-
-                  <Field
-                    label="Image URL"
-                    value={
-                      form.image
-                    }
-                    onChange={(value) =>
-                      setForm(
-                        (state) => ({
-                          ...state,
-                          image: value,
                         }),
                       )
                     }
                   />
 
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Description
-                    </span>
-
-                    <textarea
-                      rows={4}
-                      value={
-                        form.description
-                      }
-                      onChange={(e) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            description:
-                              e.target
-                                .value,
-                          }),
-                        )
-                      }
-                      className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm outline-none focus:border-primary"
-                    />
-                  </label>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field
-                      label="Sunlight"
-                      value={
-                        form.sunlight
-                      }
-                      onChange={(value) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            sunlight:
-                              value,
-                          }),
-                        )
-                      }
-                    />
-
-                    <Field
-                      label="Watering"
-                      value={
-                        form.watering
-                      }
-                      onChange={(value) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            watering:
-                              value,
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-
                   <Field
-                    label="Soil"
-                    value={
-                      form.soil
-                    }
-                    onChange={(value) =>
+                    label="Stock"
+                    type="number"
+                    value={String(
+                      form.stock,
+                    )}
+                    onChange={(
+                      value,
+                    ) =>
                       setForm(
                         (state) => ({
                           ...state,
-                          soil: value,
+                          stock:
+                            Math.max(
+                              0,
+                              Number(
+                                value,
+                              ) ||
+                                0,
+                            ),
                         }),
                       )
                     }
                   />
-
-                  <label className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Difficulty
-                    </span>
-
-                    <select
-                      value={
-                        form.difficulty
-                      }
-                      onChange={(e) =>
-                        setForm(
-                          (state) => ({
-                            ...state,
-                            difficulty:
-                              e.target
-                                .value as Difficulty,
-                          }),
-                        )
-                      }
-                      className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm"
-                    >
-                      <option value="easy">
-                        Easy
-                      </option>
-                      <option value="medium">
-                        Medium
-                      </option>
-                      <option value="hard">
-                        Hard
-                      </option>
-                    </select>
-                  </label>
-
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={
-                          form.featured
-                        }
-                        onChange={(e) =>
-                          setForm(
-                            (state) => ({
-                              ...state,
-                              featured:
-                                e.target
-                                  .checked,
-                            }),
-                          )
-                        }
-                      />
-                      Featured
-                    </label>
-
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={
-                          form.available
-                        }
-                        onChange={(e) =>
-                          setForm(
-                            (state) => ({
-                              ...state,
-                              available:
-                                e.target
-                                  .checked,
-                            }),
-                          )
-                        }
-                      />
-                      Available
-                    </label>
-                  </div>
-
-                  <button
-                    onClick={
-                      saveProduct
-                    }
-                    disabled={
-                      isSavingProduct
-                    }
-                    className="w-full rounded-full bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-60"
-                  >
-                    {isSavingProduct
-                      ? "Saving…"
-                      : editing
-                        ? "Save changes"
-                        : "Add plant"}
-                  </button>
                 </div>
+
+                <Field
+                  label="Image URL"
+                  value={
+                    form.image
+                  }
+                  onChange={(
+                    value,
+                  ) =>
+                    setForm(
+                      (state) => ({
+                        ...state,
+                        image: value,
+                      }),
+                    )
+                  }
+                />
+
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Description
+                  </span>
+
+                  <textarea
+                    rows={4}
+                    value={
+                      form.description
+                    }
+                    onChange={(event) =>
+                      setForm(
+                        (state) => ({
+                          ...state,
+                          description:
+                            event
+                              .target
+                              .value,
+                        }),
+                      )
+                    }
+                    className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm outline-none focus:border-primary"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field
+                    label="Sunlight"
+                    value={
+                      form.sunlight
+                    }
+                    onChange={(
+                      value,
+                    ) =>
+                      setForm(
+                        (state) => ({
+                          ...state,
+                          sunlight:
+                            value,
+                        }),
+                      )
+                    }
+                  />
+
+                  <Field
+                    label="Watering"
+                    value={
+                      form.watering
+                    }
+                    onChange={(
+                      value,
+                    ) =>
+                      setForm(
+                        (state) => ({
+                          ...state,
+                          watering:
+                            value,
+                        }),
+                      )
+                    }
+                  />
+                </div>
+
+                <Field
+                  label="Soil"
+                  value={
+                    form.soil
+                  }
+                  onChange={(
+                    value,
+                  ) =>
+                    setForm(
+                      (state) => ({
+                        ...state,
+                        soil: value,
+                      }),
+                    )
+                  }
+                />
+
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Difficulty
+                  </span>
+
+                  <select
+                    value={
+                      form.difficulty
+                    }
+                    onChange={(event) =>
+                      setForm(
+                        (state) => ({
+                          ...state,
+                          difficulty:
+                            normalizeDifficulty(
+                              event
+                                .target
+                                .value,
+                            ),
+                        }),
+                      )
+                    }
+                    className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm"
+                  >
+                    <option value="easy">
+                      Easy
+                    </option>
+                    <option value="medium">
+                      Medium
+                    </option>
+                    <option value="hard">
+                      Hard
+                    </option>
+                  </select>
+                </label>
+
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        form.featured
+                      }
+                      onChange={(event) =>
+                        setForm(
+                          (state) => ({
+                            ...state,
+                            featured:
+                              event
+                                .target
+                                .checked,
+                          }),
+                        )
+                      }
+                    />
+                    Featured
+                  </label>
+
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        form.available
+                      }
+                      onChange={(event) =>
+                        setForm(
+                          (state) => ({
+                            ...state,
+                            available:
+                              event
+                                .target
+                                .checked,
+                          }),
+                        )
+                      }
+                    />
+                    Available
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={
+                    saveProduct
+                  }
+                  disabled={
+                    savingProduct
+                  }
+                  className="w-full rounded-full bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {savingProduct
+                    ? "Saving…"
+                    : editing
+                      ? "Save changes"
+                      : "Add plant"}
+                </button>
               </div>
+            </div>
 
-              {/* Product list */}
-              <div className="rounded-3xl glass p-6">
-                <h2 className="font-display text-2xl">
-                  Current plants
-                </h2>
+            <div className="rounded-3xl glass p-6">
+              <h2 className="font-display text-2xl">
+                Current plants
+              </h2>
 
-                <div className="mt-5 overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="text-xs uppercase tracking-wide text-muted-foreground">
-                      <tr>
-                        <th className="pb-3">
-                          Plant
-                        </th>
-                        <th className="pb-3">
-                          Category
-                        </th>
-                        <th className="pb-3">
-                          Price
-                        </th>
-                        <th className="pb-3">
-                          Stock
-                        </th>
-                        <th className="pb-3">
-                          Status
-                        </th>
-                        <th className="pb-3" />
-                      </tr>
-                    </thead>
+              <div className="mt-5 overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr>
+                      <th className="pb-3">
+                        Plant
+                      </th>
+                      <th className="pb-3">
+                        Category
+                      </th>
+                      <th className="pb-3">
+                        Price
+                      </th>
+                      <th className="pb-3">
+                        Stock
+                      </th>
+                      <th className="pb-3">
+                        Status
+                      </th>
+                      <th className="pb-3" />
+                    </tr>
+                  </thead>
 
-                    <tbody>
-                      {productsQuery.data?.map(
-                        (
-                          product: Product,
-                        ) => (
-                          <tr
-                            key={
-                              product.id
-                            }
-                            className="border-t border-border/60"
-                          >
-                            <td className="py-3">
-                              <div className="font-semibold">
-                                {
-                                  product.name
-                                }
-                              </div>
-
-                              <div className="text-xs text-muted-foreground">
-                                {
-                                  product.slug
-                                }
-                              </div>
-                            </td>
-
-                            <td className="py-3 text-muted-foreground">
-                              {product.categoryName ??
-                                "—"}
-                            </td>
-
-                            <td className="py-3 font-semibold">
-                              ₹
-                              {Number(
-                                product.price,
-                              ).toLocaleString(
-                                "en-IN",
-                              )}
-                            </td>
-
-                            <td className="py-3">
+                  <tbody>
+                    {products.map(
+                      (
+                        product: Product,
+                      ) => (
+                        <tr
+                          key={
+                            product.id
+                          }
+                          className="border-t border-border/60"
+                        >
+                          <td className="py-3">
+                            <div className="font-semibold">
                               {
-                                product.stock
+                                product.name
                               }
-                            </td>
+                            </div>
 
-                            <td className="py-3">
-                              <span
-                                className={
-                                  product.available
-                                    ? "text-green-600"
-                                    : "text-rose-600"
-                                }
-                              >
-                                {product.available
-                                  ? "Available"
-                                  : "Hidden"}
-                              </span>
-                            </td>
+                            <div className="text-xs text-muted-foreground">
+                              {
+                                product.slug
+                              }
+                            </div>
+                          </td>
 
-                            <td className="py-3 text-right">
+                          <td className="py-3 text-muted-foreground">
+                            {
+                              product.categoryName ??
+                              "—"
+                            }
+                          </td>
+
+                          <td className="py-3 font-semibold">
+                            ₹
+                            {Number(
+                              product.price,
+                            ).toLocaleString(
+                              "en-IN",
+                            )}
+                          </td>
+
+                          <td className="py-3">
+                            {
+                              product.stock
+                            }
+                          </td>
+
+                          <td className="py-3">
+                            <span
+                              className={
+                                product.available
+                                  ? "text-green-600"
+                                  : "text-rose-600"
+                              }
+                            >
+                              {product.available
+                                ? "Available"
+                                : "Hidden"}
+                            </span>
+                          </td>
+
+                          <td className="py-3">
+                            <div className="flex justify-end gap-2">
                               <button
+                                type="button"
                                 onClick={() =>
                                   startEdit(
                                     product,
@@ -995,161 +1124,186 @@ function AdminPage() {
                               >
                                 Edit
                               </button>
-                            </td>
-                          </tr>
-                        ),
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+
+                              <button
+                                type="button"
+                                disabled={
+                                  deleteProduct.isPending
+                                }
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `Delete "${product.name}"? This cannot be undone.`,
+                                    )
+                                  ) {
+                                    deleteProduct.mutate(
+                                      product.id,
+                                    );
+                                  }
+                                }}
+                                className="rounded-full border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ),
+                    )}
+                  </tbody>
+                </table>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-        {/* =================================================
-            COVER SIZES
-        ================================================= */}
-        {tab === "covers" &&
-          !isLoading && (
-            <section className="mt-8 grid gap-8 lg:grid-cols-[340px_1fr]">
-              <div className="rounded-3xl glass p-6">
-                <h2 className="font-display text-2xl">
-                  Add cover size
-                </h2>
+        {/* COVER SIZES */}
+        {tab === "covers" && (
+          <section className="mt-8 grid gap-8 lg:grid-cols-[340px_1fr]">
+            <div className="rounded-3xl glass p-6">
+              <h2 className="font-display text-2xl">
+                Add cover size
+              </h2>
 
-                <div className="mt-5 space-y-3">
-                  <Field
-                    label="Label"
-                    value={
-                      coverForm.label
+              <div className="mt-5 space-y-3">
+                <Field
+                  label="Label"
+                  value={
+                    coverForm.label
+                  }
+                  onChange={(value) =>
+                    setCoverForm(
+                      (state) => ({
+                        ...state,
+                        label: value,
+                      }),
+                    )
+                  }
+                />
+
+                <Field
+                  label="Price increase ₹"
+                  type="number"
+                  value={String(
+                    coverForm.priceDelta,
+                  )}
+                  onChange={(value) =>
+                    setCoverForm(
+                      (state) => ({
+                        ...state,
+                        priceDelta:
+                          Math.max(
+                            0,
+                            Number(
+                              value,
+                            ) || 0,
+                          ),
+                      }),
+                    )
+                  }
+                />
+
+                <Field
+                  label="Sort order"
+                  type="number"
+                  value={String(
+                    coverForm.sortOrder,
+                  )}
+                  onChange={(value) =>
+                    setCoverForm(
+                      (state) => ({
+                        ...state,
+                        sortOrder:
+                          Math.max(
+                            0,
+                            Number(
+                              value,
+                            ) || 0,
+                          ),
+                      }),
+                    )
+                  }
+                />
+
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={
+                      coverForm.active
                     }
-                    onChange={(value) =>
+                    onChange={(event) =>
                       setCoverForm(
                         (state) => ({
                           ...state,
-                          label: value,
+                          active:
+                            event
+                              .target
+                              .checked,
                         }),
                       )
                     }
                   />
+                  Active
+                </label>
 
-                  <Field
-                    label="Price increase ₹"
-                    type="number"
-                    value={String(
-                      coverForm.priceDelta,
-                    )}
-                    onChange={(value) =>
-                      setCoverForm(
-                        (state) => ({
-                          ...state,
-                          priceDelta:
-                            Math.max(
-                              0,
-                              Number(
-                                value,
-                              ) ||
-                                0,
-                            ),
-                        }),
-                      )
-                    }
-                  />
+                <button
+                  type="button"
+                  onClick={() =>
+                    createCover.mutate(
+                      coverForm,
+                    )
+                  }
+                  disabled={
+                    createCover.isPending
+                  }
+                  className="w-full rounded-full bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {createCover.isPending
+                    ? "Saving…"
+                    : "Add cover size"}
+                </button>
+              </div>
+            </div>
 
-                  <Field
-                    label="Sort order"
-                    type="number"
-                    value={String(
-                      coverForm.sortOrder,
-                    )}
-                    onChange={(value) =>
-                      setCoverForm(
-                        (state) => ({
-                          ...state,
-                          sortOrder:
-                            Math.max(
-                              0,
-                              Number(
-                                value,
-                              ) ||
-                                0,
-                            ),
-                        }),
-                      )
-                    }
-                  />
+            <div className="rounded-3xl glass p-6">
+              <h2 className="font-display text-2xl">
+                Cover sizes
+              </h2>
 
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={
-                        coverForm.active
-                      }
-                      onChange={(e) =>
-                        setCoverForm(
-                          (state) => ({
-                            ...state,
-                            active:
-                              e.target
-                                .checked,
-                          }),
+              <div className="mt-5 space-y-3">
+                {covers.map(
+                  (cover: CoverSize) => (
+                    <CoverSizeRow
+                      key={cover.id}
+                      cover={cover}
+                      onSave={(payload) =>
+                        updateCover.mutate(
+                          payload,
                         )
                       }
-                    />
-                    Active
-                  </label>
-
-                  <button
-                    onClick={() =>
-                      createCover.mutate(
-                        coverForm,
-                      )
-                    }
-                    disabled={
-                      createCover.isPending
-                    }
-                    className="w-full rounded-full bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-60"
-                  >
-                    {createCover.isPending
-                      ? "Saving…"
-                      : "Add cover size"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-3xl glass p-6">
-                <h2 className="font-display text-2xl">
-                  Cover sizes
-                </h2>
-
-                <div className="mt-5 space-y-3">
-                  {coversQuery.data?.map(
-                    (
-                      cover: CoverSize,
-                    ) => (
-                      <CoverSizeRow
-                        key={
-                          cover.id
-                        }
-                        cover={cover}
-                        onSave={(
-                          payload,
-                        ) =>
-                          updateCover.mutate(
-                            payload,
+                      onDelete={(id) => {
+                        if (
+                          window.confirm(
+                            `Delete cover size "${cover.label}"? This cannot be undone.`,
                           )
+                        ) {
+                          deleteCover.mutate(
+                            id,
+                          );
                         }
-                      />
-                    ),
-                  )}
-                </div>
+                      }}
+                      deleting={
+                        deleteCover.isPending
+                      }
+                    />
+                  ),
+                )}
               </div>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-        {/* =================================================
-            ORDERS
-        ================================================= */}
+        {/* ORDERS */}
         {tab === "orders" && (
           <section className="mt-8 rounded-3xl glass p-6">
             <h2 className="font-display text-2xl">
@@ -1157,21 +1311,14 @@ function AdminPage() {
             </h2>
 
             <div className="mt-5 space-y-4">
-              {ordersQuery.isLoading && (
-                <p className="text-sm text-muted-foreground">
-                  Loading orders…
-                </p>
-              )}
-
               {!ordersQuery.isLoading &&
-                ordersQuery.data
-                  ?.length === 0 && (
+                orders.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     No orders yet.
                   </p>
                 )}
 
-              {ordersQuery.data?.map(
+              {orders.map(
                 (order: any) => (
                   <article
                     key={order.id}
@@ -1196,7 +1343,9 @@ function AdminPage() {
                         </p>
 
                         <p className="text-xs text-muted-foreground">
-                          {order.email}
+                          {
+                            order.email
+                          }
                         </p>
                       </div>
 
@@ -1226,9 +1375,7 @@ function AdminPage() {
                           index: number,
                         ) => (
                           <div
-                            key={
-                              `${order.id}-${index}`
-                            }
+                            key={`${order.id}-${index}`}
                             className="flex justify-between gap-4"
                           >
                             <span className="text-muted-foreground">
@@ -1261,9 +1408,17 @@ function AdminPage() {
 
                     <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <div className="text-sm text-muted-foreground">
-                        {order.address},{" "}
-                        {order.city},{" "}
-                        {order.state}{" "}
+                        {
+                          order.address
+                        }
+                        ,{" "}
+                        {
+                          order.city
+                        }
+                        ,{" "}
+                        {
+                          order.state
+                        }{" "}
                         {
                           order.pincode
                         }
@@ -1273,21 +1428,19 @@ function AdminPage() {
                         value={
                           order.order_status
                         }
-                        onChange={(e) =>
-                          updateOrder.mutate(
-                            {
-                              id: order.id,
-                              status:
-                                e.target
-                                  .value as
-                                  | "placed"
-                                  | "confirmed"
-                                  | "packed"
-                                  | "shipped"
-                                  | "delivered"
-                                  | "cancelled",
-                            },
-                          )
+                        onChange={(event) =>
+                          updateOrder.mutate({
+                            id: order.id,
+                            status:
+                              event.target
+                                .value as
+                                | "placed"
+                                | "confirmed"
+                                | "packed"
+                                | "shipped"
+                                | "delivered"
+                                | "cancelled",
+                          })
                         }
                         className="rounded-full border border-border bg-background/60 px-4 py-2 text-sm"
                       >
@@ -1299,9 +1452,7 @@ function AdminPage() {
                           "delivered",
                           "cancelled",
                         ].map(
-                          (
-                            status,
-                          ) => (
+                          (status) => (
                             <option
                               key={
                                 status
@@ -1327,49 +1478,79 @@ function AdminPage() {
   );
 }
 
-/* =====================================================
-   COVER SIZE ROW
-===================================================== */
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-4 py-2 text-sm font-semibold ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "border border-border bg-background/60"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 function CoverSizeRow({
   cover,
   onSave,
+  onDelete,
+  deleting,
 }: {
   cover: CoverSize;
-  onSave: (
-    payload: {
-      id: string;
-      label: string;
-      priceDelta: number;
-      sortOrder: number;
-      active: boolean;
-    },
-  ) => void;
+  onSave: (payload: {
+    id: string;
+    label: string;
+    priceDelta: number;
+    sortOrder: number;
+    active: boolean;
+  }) => void;
+  onDelete: (id: string) => void;
+  deleting: boolean;
 }) {
   const [label, setLabel] =
     useState(cover.label);
 
   const [priceDelta, setPriceDelta] =
     useState(
-      Number(cover.price_delta),
+      Number(
+        cover.price_delta,
+      ),
     );
 
   const [sortOrder, setSortOrder] =
     useState(
-      Number(cover.sort_order),
+      Number(
+        cover.sort_order,
+      ),
     );
 
   const [active, setActive] =
     useState(
-      Boolean(cover.active),
+      Boolean(
+        cover.active,
+      ),
     );
 
   return (
     <div className="grid gap-3 rounded-2xl border border-border/70 p-4 md:grid-cols-[1fr_140px_100px_110px_auto]">
       <input
         value={label}
-        onChange={(e) =>
-          setLabel(e.target.value)
+        onChange={(event) =>
+          setLabel(
+            event.target.value,
+          )
         }
         className="rounded-xl border border-border bg-background/60 px-3 py-2 text-sm"
       />
@@ -1377,10 +1558,11 @@ function CoverSizeRow({
       <input
         type="number"
         value={priceDelta}
-        onChange={(e) =>
+        onChange={(event) =>
           setPriceDelta(
-            Number(e.target.value) ||
-              0,
+            Number(
+              event.target.value,
+            ) || 0,
           )
         }
         className="rounded-xl border border-border bg-background/60 px-3 py-2 text-sm"
@@ -1389,10 +1571,11 @@ function CoverSizeRow({
       <input
         type="number"
         value={sortOrder}
-        onChange={(e) =>
+        onChange={(event) =>
           setSortOrder(
-            Number(e.target.value) ||
-              0,
+            Number(
+              event.target.value,
+            ) || 0,
           )
         }
         className="rounded-xl border border-border bg-background/60 px-3 py-2 text-sm"
@@ -1402,36 +1585,48 @@ function CoverSizeRow({
         <input
           type="checkbox"
           checked={active}
-          onChange={(e) =>
+          onChange={(event) =>
             setActive(
-              e.target.checked,
+              event.target.checked,
             )
           }
         />
         Active
       </label>
 
-      <button
-        onClick={() =>
-          onSave({
-            id: cover.id,
-            label,
-            priceDelta,
-            sortOrder,
-            active,
-          })
-        }
-        className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
-      >
-        Save
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            onSave({
+              id: cover.id,
+              label,
+              priceDelta,
+              sortOrder,
+              active,
+            })
+          }
+          className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          disabled={deleting}
+          onClick={() =>
+            onDelete(
+              cover.id,
+            )
+          }
+          className="rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
-
-/* =====================================================
-   INPUT
-===================================================== */
 
 function Field({
   label,
@@ -1455,9 +1650,9 @@ function Field({
       <input
         type={type}
         value={value}
-        onChange={(e) =>
+        onChange={(event) =>
           onChange(
-            e.target.value,
+            event.target.value,
           )
         }
         className="w-full rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
@@ -1465,10 +1660,6 @@ function Field({
     </label>
   );
 }
-
-/* =====================================================
-   HELPERS
-===================================================== */
 
 function slugify(
   value: string,
@@ -1495,13 +1686,15 @@ function normalizeDifficulty(
       .toLowerCase();
 
   if (
-    normalized === "medium"
+    normalized ===
+    "medium"
   ) {
     return "medium";
   }
 
   if (
-    normalized === "hard"
+    normalized ===
+    "hard"
   ) {
     return "hard";
   }
