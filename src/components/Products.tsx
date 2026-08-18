@@ -96,7 +96,7 @@ export function Products({
     coverSizeId: string | null,
   ) => {
     if (!user) {
-      navigate({ to: "/auth" });
+      navigate({ to: "/login" });
       return;
     }
 

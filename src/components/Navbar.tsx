@@ -248,7 +248,7 @@ export function Navbar() {
               </button>
             ) : (
               <Link
-                to="/auth"
+                to="/login"
                 className="grid h-10 place-items-center rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground transition-transform hover:scale-105"
               >
                 Sign in
@@ -376,7 +376,7 @@ export function Navbar() {
                 </button>
               ) : (
                 <Link
-                  to="/auth"
+                  to="/login"
                   onClick={() =>
                     setOpen(false)
                   }
