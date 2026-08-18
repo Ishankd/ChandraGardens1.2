@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/Logo.png";
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       {
@@ -116,7 +116,7 @@ function AuthPage() {
             password,
             options: {
               emailRedirectTo:
-                `${window.location.origin}/auth`,
+                `${window.location.origin}/login`,
               data: {
                 full_name: fullName,
                 phone,
@@ -141,7 +141,7 @@ function AuthPage() {
           email,
           {
             redirectTo:
-              `${window.location.origin}/auth`,
+              `${window.location.origin}/login`,
           },
         );
 
@@ -172,7 +172,7 @@ function AuthPage() {
           provider: "google",
           options: {
             redirectTo:
-              `${window.location.origin}/auth`,
+              `${window.location.origin}/login`,
           },
         });
 
